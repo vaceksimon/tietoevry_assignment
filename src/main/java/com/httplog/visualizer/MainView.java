@@ -10,26 +10,31 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashSet;
 
 @Route("")
 public class MainView extends VerticalLayout {
     public MainView() {
-        var clientAddesses = getClientAddresses();
-        if (clientAddesses == null) {
+        String serverName = getServerName();
+        if(serverName == null) {
             add(new Div(new Paragraph("There was an error loading the log from: https://gist.githubusercontent.com/hajda14/8da0b313b0503b0faee7a8d7fe63d9ca/raw/2eb3eb138e8307af00c0c64f20c97e3c802d54a2/testlog")));
             return;
         }
 
-        clientAddesses.forEach(address -> {
-            Div newDiv = new Div(new Label(address));
+        var clientAddresses = getClientAddresses();
+        if (clientAddresses == null) {
+            add(new Div(new Paragraph("There was an error loading the log from: https://gist.githubusercontent.com/hajda14/8da0b313b0503b0faee7a8d7fe63d9ca/raw/2eb3eb138e8307af00c0c64f20c97e3c802d54a2/testlog")));
+            return;
+        }
+        Div wrapper = new Div();
+        clientAddresses.forEach(address -> {
+            Div newDiv = new Div(new Label(serverName + " → " + address));
             newDiv.addClickListener(e -> {
-                System.out.println("detailed view");
+                createDetail(address);
             });
-            add(newDiv);
+            wrapper.add(newDiv);
         });
-
+        add(wrapper);
     }
 
     private HashSet<String> getClientAddresses() {
@@ -49,4 +54,20 @@ public class MainView extends VerticalLayout {
         return null;
         }
     }
+
+    private String getServerName() {
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(new URL("https://gist.githubusercontent.com/hajda14/8da0b313b0503b0faee7a8d7fe63d9ca/raw/2eb3eb138e8307af00c0c64f20c97e3c802d54a2/testlog").openStream()));
+            String inputLine = in.readLine();
+            in.close();
+            return inputLine.split(" ")[4];
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private void createDetail(String clientAddress) {
+        System.out.println("Detail for client: " + clientAddress);
+    }
+
 }
