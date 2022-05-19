@@ -5,7 +5,6 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.orderedlayout.BoxSizing;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
@@ -32,7 +31,12 @@ public class MainView extends VerticalLayout {
             return;
         }
         VerticalLayout wrapper = new VerticalLayout();
+
+        VerticalLayout detail = new VerticalLayout();
+        detail.setVisible(false);
+
         wrapper.setWidth(900.0f, Unit.PIXELS);
+        wrapper.setMaxWidth(900.0f, Unit.PIXELS);
         wrapper.setAlignItems(Alignment.CENTER);
         wrapper.add(new H1("List of clients contacted by the server:"));
 
@@ -42,7 +46,7 @@ public class MainView extends VerticalLayout {
         for (var address : clientAddresses) {
             Div newDiv = new Div(new Label(serverName + " → " + address));
             newDiv.addClickListener(e -> {
-                createDetail(address);
+                createDetail(address, detail);
             });
             if(rowInList.getComponentCount() == 2) {
                 wrapper.add(rowInList);
@@ -52,9 +56,7 @@ public class MainView extends VerticalLayout {
             rowInList.add(newDiv);
         }
 
-
-
-        wrapper.add(rowInList);
+        wrapper.add(rowInList, detail);
         add(wrapper);
     }
 
@@ -87,8 +89,11 @@ public class MainView extends VerticalLayout {
         }
     }
 
-    private void createDetail(String clientAddress) {
-        System.out.println("Detail for client: " + clientAddress);
+    private void createDetail(String clientAddress, VerticalLayout detail) {
+        detail.removeAll();
+        detail.add(new H1("Detail of: " + clientAddress));
+        detail.setVisible(true);
+        detail.setAlignItems(Alignment.CENTER);
     }
 
 }
