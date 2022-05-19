@@ -36,8 +36,7 @@ public class MainView extends VerticalLayout {
         VerticalLayout detail = new VerticalLayout();
         detail.setVisible(false);
 
-        wrapper.setWidth(900.0f, Unit.PIXELS);
-        wrapper.setMaxWidth(900.0f, Unit.PIXELS);
+        wrapper.setWidth(600.0f, Unit.PIXELS);
         wrapper.setAlignItems(Alignment.CENTER);
         wrapper.add(new H1("List of clients contacted by the server:"));
 
@@ -112,6 +111,22 @@ public class MainView extends VerticalLayout {
                     data.add(inputLine.substring(inputLine.indexOf("RECEIVED:")));
                     isItResponse = false;
                 }
+            }
+            isItResponse = false;
+            for (String item : data) {
+                if(!isItResponse) {
+                    HorizontalLayout tmp = new HorizontalLayout(new Label(item));
+                    tmp.setJustifyContentMode(JustifyContentMode.START);
+                    tmp.setWidthFull();
+                    detail.add(tmp);
+                } else {
+                    HorizontalLayout tmp = new HorizontalLayout(new Label(item));
+                    tmp.setJustifyContentMode(JustifyContentMode.END);
+                    tmp.setAlignItems(Alignment.END);
+                    tmp.setWidthFull();
+                    detail.add(tmp);
+                }
+                isItResponse = !isItResponse;
             }
         } catch (IOException e) {
 
