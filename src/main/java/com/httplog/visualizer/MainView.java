@@ -1,8 +1,12 @@
 package com.httplog.visualizer;
 
+import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.orderedlayout.BoxSizing;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 
@@ -15,6 +19,7 @@ import java.util.HashSet;
 @Route("")
 public class MainView extends VerticalLayout {
     public MainView() {
+        setAlignItems(Alignment.CENTER);
         String serverName = getServerName();
         if(serverName == null) {
             add(new Div(new Paragraph("There was an error loading the log from: https://gist.githubusercontent.com/hajda14/8da0b313b0503b0faee7a8d7fe63d9ca/raw/2eb3eb138e8307af00c0c64f20c97e3c802d54a2/testlog")));
@@ -26,14 +31,30 @@ public class MainView extends VerticalLayout {
             add(new Div(new Paragraph("There was an error loading the log from: https://gist.githubusercontent.com/hajda14/8da0b313b0503b0faee7a8d7fe63d9ca/raw/2eb3eb138e8307af00c0c64f20c97e3c802d54a2/testlog")));
             return;
         }
-        Div wrapper = new Div();
-        clientAddresses.forEach(address -> {
+        VerticalLayout wrapper = new VerticalLayout();
+        wrapper.setWidth(900.0f, Unit.PIXELS);
+        wrapper.setAlignItems(Alignment.CENTER);
+        wrapper.add(new H1("List of clients contacted by the server:"));
+
+        HorizontalLayout rowInList = new HorizontalLayout();
+        rowInList.getThemeList().add("spacing-xl");
+
+        for (var address : clientAddresses) {
             Div newDiv = new Div(new Label(serverName + " → " + address));
             newDiv.addClickListener(e -> {
                 createDetail(address);
             });
-            wrapper.add(newDiv);
-        });
+            if(rowInList.getComponentCount() == 2) {
+                wrapper.add(rowInList);
+                rowInList = new HorizontalLayout();
+                rowInList.getThemeList().add("spacing-xl");
+            }
+            rowInList.add(newDiv);
+        }
+
+
+
+        wrapper.add(rowInList);
         add(wrapper);
     }
 
