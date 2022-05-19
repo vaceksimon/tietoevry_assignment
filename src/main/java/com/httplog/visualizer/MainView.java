@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 @Route("")
@@ -67,7 +68,7 @@ public class MainView extends VerticalLayout {
             HashSet<String> clientAddresses = new HashSet<>();
             while ((inputLine = in.readLine()) != null) {
                 if (inputLine.contains(" SENT:")) {
-                    String resource = inputLine.substring(inputLine.lastIndexOf("https://"));
+                    String resource = inputLine.substring(inputLine.lastIndexOf("http"));
                     clientAddresses.add(resource.split("/")[2]);
                 }
             }
@@ -94,6 +95,27 @@ public class MainView extends VerticalLayout {
         detail.add(new H1("Detail of: " + clientAddress));
         detail.setVisible(true);
         detail.setAlignItems(Alignment.CENTER);
+
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(new URL("https://gist.githubusercontent.com/hajda14/8da0b313b0503b0faee7a8d7fe63d9ca/raw/2eb3eb138e8307af00c0c64f20c97e3c802d54a2/testlog").openStream()));
+
+            String inputLine;
+            boolean isItResponse = false;
+            ArrayList<String> data = new ArrayList<>();
+            while((inputLine = in.readLine()) != null) {
+                if(inputLine.contains(clientAddress)) {
+                    String sentData = inputLine.substring(inputLine.indexOf("SENT:"));
+                    data.add(sentData.replaceAll("https?://" + clientAddress + "/", ""));
+                    isItResponse = true;
+                }
+                else if(isItResponse) {
+                    data.add(inputLine.substring(inputLine.indexOf("RECEIVED:")));
+                    isItResponse = false;
+                }
+            }
+        } catch (IOException e) {
+
+        }
     }
 
 }
