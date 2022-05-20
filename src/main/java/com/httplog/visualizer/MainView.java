@@ -21,7 +21,7 @@ public class MainView extends VerticalLayout {
     public MainView() {
         setAlignItems(Alignment.CENTER);
         String serverName = getServerName();
-        if(serverName == null) {
+        if (serverName == null) {
             add(new Div(new Paragraph("There was an error loading the log from: https://gist.githubusercontent.com/hajda14/8da0b313b0503b0faee7a8d7fe63d9ca/raw/2eb3eb138e8307af00c0c64f20c97e3c802d54a2/testlog")));
             return;
         }
@@ -38,7 +38,7 @@ public class MainView extends VerticalLayout {
 
         wrapper.setWidth(600.0f, Unit.PIXELS);
         wrapper.setAlignItems(Alignment.CENTER);
-        wrapper.add(new H1("List of clients contacted by the server:"));
+        wrapper.add(new H1("List of addresses contacted:"));
 
         HorizontalLayout rowInList = new HorizontalLayout();
         rowInList.getThemeList().add("spacing-xl");
@@ -48,7 +48,7 @@ public class MainView extends VerticalLayout {
             newDiv.addClickListener(e -> {
                 createDetail(address, detail);
             });
-            if(rowInList.getComponentCount() == 2) {
+            if (rowInList.getComponentCount() == 2) {
                 wrapper.add(rowInList);
                 rowInList = new HorizontalLayout();
                 rowInList.getThemeList().add("spacing-xl");
@@ -74,7 +74,7 @@ public class MainView extends VerticalLayout {
             in.close();
             return clientAddresses;
         } catch (IOException e) {
-        return null;
+            return null;
         }
     }
 
@@ -101,20 +101,19 @@ public class MainView extends VerticalLayout {
             String inputLine;
             boolean isItResponse = false;
             ArrayList<String> data = new ArrayList<>();
-            while((inputLine = in.readLine()) != null) {
-                if(inputLine.contains(clientAddress)) {
+            while ((inputLine = in.readLine()) != null) {
+                if (inputLine.contains(clientAddress)) {
                     String sentData = inputLine.substring(inputLine.indexOf("SENT:"));
                     data.add(sentData.replaceAll("https?://" + clientAddress + "/", ""));
                     isItResponse = true;
-                }
-                else if(isItResponse) {
+                } else if (isItResponse) {
                     data.add(inputLine.substring(inputLine.indexOf("RECEIVED:")));
                     isItResponse = false;
                 }
             }
             isItResponse = false;
             for (String item : data) {
-                if(!isItResponse) {
+                if (!isItResponse) {
                     HorizontalLayout tmp = new HorizontalLayout(new Label(item));
                     tmp.setJustifyContentMode(JustifyContentMode.START);
                     tmp.setWidthFull();
@@ -129,7 +128,7 @@ public class MainView extends VerticalLayout {
                 isItResponse = !isItResponse;
             }
         } catch (IOException e) {
-
+            detail.add(new Div(new Paragraph("There was an error loading the log from: https://gist.githubusercontent.com/hajda14/8da0b313b0503b0faee7a8d7fe63d9ca/raw/2eb3eb138e8307af00c0c64f20c97e3c802d54a2/testlog")));
         }
     }
 
