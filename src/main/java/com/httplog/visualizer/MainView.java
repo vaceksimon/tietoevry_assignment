@@ -16,6 +16,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+/**
+ * This class represents the main (and only) view of the visualizer application, including the logic behind it.
+ *
+ * @author Šimon Vacek
+ */
 @Route("")
 public class MainView extends VerticalLayout {
     public MainView() {
@@ -60,14 +65,21 @@ public class MainView extends VerticalLayout {
         add(wrapper);
     }
 
+    /**
+     * Finds and returns unique of all clients contacted by the server.
+     *
+     * @return HashSet of all unique addresses.
+     */
     private HashSet<String> getClientAddresses() {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(new URL("https://gist.githubusercontent.com/hajda14/8da0b313b0503b0faee7a8d7fe63d9ca/raw/2eb3eb138e8307af00c0c64f20c97e3c802d54a2/testlog").openStream()));
             String inputLine;
             HashSet<String> clientAddresses = new HashSet<>();
             while ((inputLine = in.readLine()) != null) {
+                // client addresses are mentioned only sent logs
                 if (inputLine.contains(" SENT:")) {
                     String resource = inputLine.substring(inputLine.lastIndexOf("http"));
+                    // resource now contains https://address/path, so the address will be third item in the split list
                     clientAddresses.add(resource.split("/")[2]);
                 }
             }
@@ -78,23 +90,62 @@ public class MainView extends VerticalLayout {
         }
     }
 
+    /**
+     * Finds and returns the server name which is the subject of the log.
+     *
+     * @return Name of the server mentioned in the log.
+     */
     private String getServerName() {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(new URL("https://gist.githubusercontent.com/hajda14/8da0b313b0503b0faee7a8d7fe63d9ca/raw/2eb3eb138e8307af00c0c64f20c97e3c802d54a2/testlog").openStream()));
             String inputLine = in.readLine();
             in.close();
+            // since the log is formatted as "DATE TIME INFO SERVER_NAME ...", this "hack" can be used
             return inputLine.split(" ")[4];
         } catch (IOException e) {
             return null;
         }
     }
 
+    /**
+     * Fills the detailed section with information of communication.
+     * @param clientAddress Address of a client contacted by server.
+     * @param detail Layout Vaadin component to be filled with data.
+     */
     private void createDetail(String clientAddress, VerticalLayout detail) {
         detail.removeAll();
         detail.add(new H1("Detail of: " + clientAddress));
         detail.setVisible(true);
         detail.setAlignItems(Alignment.CENTER);
 
+        // gets all the data containing history of communication
+        ArrayList<String> data = getDetailedCommunication(clientAddress);
+        if(data == null) {
+            detail.add(new Div(new Paragraph("There was an error loading the log from: https://gist.githubusercontent.com/hajda14/8da0b313b0503b0faee7a8d7fe63d9ca/raw/2eb3eb138e8307af00c0c64f20c97e3c802d54a2/testlog")));
+            return;
+        }
+
+        boolean isItResponse = false;
+        for (String item : data) {
+            // adds data items to the detail component in containers properly aligned to the left or right
+            HorizontalLayout container = new HorizontalLayout(new Label(item));
+            container.setWidthFull();
+            detail.add(container);
+            if (!isItResponse)
+                container.setJustifyContentMode(JustifyContentMode.START);
+            else
+                container.setJustifyContentMode(JustifyContentMode.END);
+
+            isItResponse = !isItResponse;
+        }
+    }
+
+    /**
+     * Finds and extracts all important parts communication regarding given client address contacted by the server.
+     * @param clientAddress Address of a client contacted by the server.
+     * @return ArrayList, where odd items are requests and even are responses.
+     */
+    private ArrayList<String> getDetailedCommunication(String clientAddress) {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(new URL("https://gist.githubusercontent.com/hajda14/8da0b313b0503b0faee7a8d7fe63d9ca/raw/2eb3eb138e8307af00c0c64f20c97e3c802d54a2/testlog").openStream()));
 
@@ -111,24 +162,9 @@ public class MainView extends VerticalLayout {
                     isItResponse = false;
                 }
             }
-            isItResponse = false;
-            for (String item : data) {
-                if (!isItResponse) {
-                    HorizontalLayout tmp = new HorizontalLayout(new Label(item));
-                    tmp.setJustifyContentMode(JustifyContentMode.START);
-                    tmp.setWidthFull();
-                    detail.add(tmp);
-                } else {
-                    HorizontalLayout tmp = new HorizontalLayout(new Label(item));
-                    tmp.setJustifyContentMode(JustifyContentMode.END);
-                    tmp.setAlignItems(Alignment.END);
-                    tmp.setWidthFull();
-                    detail.add(tmp);
-                }
-                isItResponse = !isItResponse;
-            }
+            return data;
         } catch (IOException e) {
-            detail.add(new Div(new Paragraph("There was an error loading the log from: https://gist.githubusercontent.com/hajda14/8da0b313b0503b0faee7a8d7fe63d9ca/raw/2eb3eb138e8307af00c0c64f20c97e3c802d54a2/testlog")));
+            return null;
         }
     }
 
